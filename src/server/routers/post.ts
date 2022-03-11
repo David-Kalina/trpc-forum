@@ -90,6 +90,9 @@ export const postRouter = createRouter()
             ...post,
             liked: (await checkIfUserLiked(user as string, post.id))
               .alreadyLiked,
+            disliked: await (
+              await checkIfUserDisliked(user as string, post.id)
+            ).alreadyDisliked,
           };
         }),
       );

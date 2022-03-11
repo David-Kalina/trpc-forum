@@ -11,6 +11,7 @@ function ThreadPreview({
     title: string;
     likes: number;
     liked: boolean;
+    disliked: boolean;
   };
 }) {
   return (
@@ -22,7 +23,12 @@ function ThreadPreview({
       p="4"
       border="1px solid grey"
     >
-      <LikeThread liked={post.liked} id={post.id} likes={post.likes} />
+      <LikeThread
+        liked={post.liked}
+        disliked={post.disliked}
+        id={post.id}
+        likes={post.likes}
+      />
       <VStack align="stretch" ml="2rem">
         <HStack>
           <Avatar size="sm" />

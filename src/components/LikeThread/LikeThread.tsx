@@ -9,10 +9,12 @@ function LikeThread({
   id,
   likes,
   liked,
+  disliked,
 }: {
   id: string;
   likes: number;
   liked: boolean;
+  disliked: boolean;
 }) {
   const utils = trpc.useContext();
 
@@ -33,6 +35,7 @@ function LikeThread({
       <IconButton
         variant="ghost"
         aria-label="upvote"
+        color={liked ? 'orange' : 'unset'}
         icon={<FaChevronUp />}
         onClick={() => likePost.mutateAsync({ id })}
       />
@@ -40,6 +43,7 @@ function LikeThread({
       <IconButton
         onClick={() => dislikePost.mutateAsync({ id })}
         variant="ghost"
+        color={disliked ? 'red' : 'unset'}
         aria-label="downvote"
         icon={<FaChevronDown />}
       />
