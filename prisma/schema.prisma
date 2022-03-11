@@ -7,16 +7,36 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 model Post {
-  id    String @id @default(uuid())
-  title String
-  text  String
+  id        String      @id @default(uuid())
+  title     String
+  text      String
+  likes     Int         @default(0)
+  postLikes PostLikes[]
+
+
 
   // To return `Date`s intact through the API we need to add data transformers
   // https://trpc.io/docs/data-transformers
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  PostDislikes PostDislikes[]
+}
+
+model PostLikes {
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+  user   String
+}
+
+model PostDislikes {
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+  user   String
 }

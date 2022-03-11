@@ -1,5 +1,6 @@
 import * as trpc from '@trpc/server';
 import * as trpcNext from '@trpc/server/adapters/next';
+import { getSession } from 'next-auth/react';
 
 /**
  * Creates context for an incoming request
@@ -9,10 +10,14 @@ export const createContext = async (
   opts: trpcNext.CreateNextContextOptions,
 ) => {
   const { req, res } = opts;
+
+  const session = await getSession({ req });
+
   // for API-response caching see https://trpc.io/docs/caching
   return {
     req,
     res,
+    session,
   };
 };
 

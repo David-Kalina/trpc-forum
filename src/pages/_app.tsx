@@ -1,3 +1,4 @@
+import { ChakraProvider } from '@chakra-ui/react';
 import { httpBatchLink } from '@trpc/client/links/httpBatchLink';
 import { loggerLink } from '@trpc/client/links/loggerLink';
 import { withTRPC } from '@trpc/next';
@@ -7,6 +8,7 @@ import { AppProps } from 'next/app';
 import { AppType } from 'next/dist/shared/lib/utils';
 import { ReactElement, ReactNode } from 'react';
 import { AppRouter } from 'server/routers/_app';
+import { getSession, SessionProvider } from 'next-auth/react';
 import superjson from 'superjson';
 
 export type NextPageWithLayout = NextPage & {
@@ -19,10 +21,25 @@ type AppPropsWithLayout = AppProps & {
 
 const MyApp = (({ Component, pageProps }: AppPropsWithLayout) => {
   const getLayout =
-    Component.getLayout ?? ((page) => <DefaultLayout>{page}</DefaultLayout>);
+    Component.getLayout ??
+    ((page) => (
+      <SessionProvider session={pageProps.session}>
+        <ChakraProvider>
+          <DefaultLayout>{page}</DefaultLayout>
+        </ChakraProvider>
+      </SessionProvider>
+    ));
 
   return getLayout(<Component {...pageProps} />);
 }) as AppType;
+
+MyApp.getInitialProps = async ({ ctx }) => {
+  return {
+    pageProps: {
+      session: await getSession(ctx),
+    },
+  };
+};
 
 function getBaseUrl() {
   if (process.browser) {
@@ -44,17 +61,9 @@ function getBaseUrl() {
 
 export default withTRPC<AppRouter>({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  config() {
-    /**
-     * If you want to use SSR, you need to use the server's full URL
-     * @link https://trpc.io/docs/ssr
-     */
+  config({ ctx }) {
     return {
-      /**
-       * @link https://trpc.io/docs/links
-       */
       links: [
-        // adds pretty logs to your console in development and logs errors in production
         loggerLink({
           enabled: (opts) =>
             process.env.NODE_ENV === 'development' ||
@@ -64,23 +73,18 @@ export default withTRPC<AppRouter>({
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
-      /**
-       * @link https://trpc.io/docs/data-transformers
-       */
       transformer: superjson,
-      /**
-       * @link https://react-query.tanstack.com/reference/QueryClient
-       */
-      // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
+      headers: ctx?.req
+        ? {
+            ...ctx.req.headers,
+            'x-ssr': '1',
+          }
+        : {},
     };
   },
-  /**
-   * @link https://trpc.io/docs/ssr
-   */
   ssr: true,
-  /**
-   * Set headers or status code when doing SSR
-   */
+
   responseMeta({ clientErrors }) {
     if (clientErrors.length) {
       // propagate http first error from API calls
@@ -88,9 +92,6 @@ export default withTRPC<AppRouter>({
         status: clientErrors[0].data?.httpStatus ?? 500,
       };
     }
-
-    // for app caching with SSR see https://trpc.io/docs/caching
-
     return {};
   },
 })(MyApp);
