@@ -20,14 +20,10 @@ function BrowseThreads() {
       </Heading>
       <Flex>
         <VStack align="stretch" flex={3} spacing={6}>
-          {data?.pages.map(({ posts, nextCursor, userLiked }, i) => (
+          {data?.pages.map(({ posts, nextCursor }, i) => (
             <React.Fragment key={i}>
               {posts.map((post) => (
-                <ThreadPreview
-                  userLiked={userLiked}
-                  key={post.id}
-                  post={post}
-                />
+                <ThreadPreview key={post.id} post={post} />
               ))}
             </React.Fragment>
           ))}

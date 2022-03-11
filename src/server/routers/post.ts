@@ -88,7 +88,8 @@ export const postRouter = createRouter()
         posts.map(async (post) => {
           return {
             ...post,
-            liked: await checkIfUserLiked(user as string, post.id),
+            liked: (await checkIfUserLiked(user as string, post.id))
+              .alreadyLiked,
           };
         }),
       );
@@ -201,8 +202,6 @@ export const postRouter = createRouter()
 
       const user = ctx?.session?.user?.name as string;
 
-      const { id: likedId } = await checkIfUserLiked(user, id);
-
       await toggleLike(user, id as string);
 
       const post = await prisma.post.update({
@@ -232,8 +231,6 @@ export const postRouter = createRouter()
       const { id } = input;
 
       const user = ctx?.session?.user?.name as string;
-
-      const { id: dislikedId } = await checkIfUserDisliked(user as string, id);
 
       await toggleDislike(user, id as string);
 

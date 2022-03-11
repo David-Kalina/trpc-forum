@@ -8,11 +8,11 @@ import { trpc } from 'utils/trpc';
 function LikeThread({
   id,
   likes,
-  userLiked,
+  liked,
 }: {
   id: string;
   likes: number;
-  userLiked: boolean;
+  liked: boolean;
 }) {
   const utils = trpc.useContext();
 

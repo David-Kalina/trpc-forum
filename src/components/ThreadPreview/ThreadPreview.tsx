@@ -4,15 +4,14 @@ import React from 'react';
 
 function ThreadPreview({
   post,
-  userLiked,
 }: {
   post: {
     id: string;
     text: string;
     title: string;
     likes: number;
+    liked: boolean;
   };
-  userLiked: boolean;
 }) {
   return (
     <Flex
@@ -23,7 +22,7 @@ function ThreadPreview({
       p="4"
       border="1px solid grey"
     >
-      <LikeThread userLiked={userLiked} id={post.id} likes={post.likes} />
+      <LikeThread liked={post.liked} id={post.id} likes={post.likes} />
       <VStack align="stretch" ml="2rem">
         <HStack>
           <Avatar size="sm" />
