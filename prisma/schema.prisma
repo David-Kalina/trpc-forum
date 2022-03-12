@@ -25,6 +25,8 @@ model Post {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @default(now()) @updatedAt
   PostDislikes PostDislikes[]
+  createdBy    String         @default("")
+  Reply        Reply[]
 }
 
 model PostLikes {
@@ -39,4 +41,15 @@ model PostDislikes {
   postId String
   post   Post   @relation(fields: [postId], references: [id])
   user   String
+}
+
+model Reply {
+  id        String   @id @default(uuid())
+  text      String
+  likes     Int      @default(0)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  createdBy String   @default("")
 }

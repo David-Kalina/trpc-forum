@@ -1,7 +1,11 @@
-import { useRouter } from 'next/router';
-import { trpc } from 'utils/trpc';
+import { Avatar, Box, Heading, HStack, Text } from '@chakra-ui/react';
+import LikeThread from 'components/LikeThread';
+import Replies from 'components/Replies';
+import Reply from 'components/Reply';
 import NextError from 'next/error';
+import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
+import { trpc } from 'utils/trpc';
 
 const PostViewPage: NextPageWithLayout = () => {
   const id = useRouter().query.id as string;
@@ -22,13 +26,28 @@ const PostViewPage: NextPageWithLayout = () => {
   const { data } = postQuery;
   return (
     <>
-      <h1>{data.title}</h1>
-      <em>Created {data.createdAt.toLocaleDateString()}</em>
-
-      <p>{data.text}</p>
-
-      <h2>Raw data:</h2>
-      <pre>{JSON.stringify(data, null, 4)}</pre>
+      <Heading as="h1" size="xl">
+        {data.title}
+      </Heading>
+      <HStack>
+        <Avatar name={data.createdBy} />
+        <Box>
+          <Text>{data.createdBy}</Text>
+          <em>Created {data.createdAt.toLocaleDateString()}</em>
+        </Box>
+      </HStack>
+      <Text>{data.text}</Text>
+      <HStack>
+        <LikeThread
+          id={data.id}
+          likes={data.likes}
+          liked={false}
+          disliked={false}
+        />
+        <Reply postId={data.id} />
+      </HStack>
+      <hr />
+      <Replies postId={data.id} />
     </>
   );
 };

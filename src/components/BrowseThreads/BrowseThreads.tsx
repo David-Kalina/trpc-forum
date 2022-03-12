@@ -5,7 +5,7 @@ import { trpc } from 'utils/trpc';
 
 function BrowseThreads() {
   const { hasNextPage, data, fetchNextPage } = trpc.useInfiniteQuery(
-    ['post.infinite', { limit: 1 }],
+    ['post.infinite', { limit: 10 }],
     {
       getNextPageParam: (lastPage) => {
         return lastPage.nextCursor;
@@ -20,7 +20,7 @@ function BrowseThreads() {
       </Heading>
       <Flex>
         <VStack align="stretch" flex={3} spacing={6}>
-          {data?.pages.map(({ posts, nextCursor }, i) => (
+          {data?.pages.map(({ posts }, i) => (
             <React.Fragment key={i}>
               {posts.map((post) => (
                 <ThreadPreview key={post.id} post={post} />

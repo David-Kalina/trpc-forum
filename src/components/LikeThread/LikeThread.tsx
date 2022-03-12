@@ -31,7 +31,7 @@ function LikeThread({
   });
 
   return (
-    <Flex flexDirection="column" align="center">
+    <Flex flexDirection="column" alignSelf="start" alignItems="center">
       <IconButton
         variant="ghost"
         aria-label="upvote"

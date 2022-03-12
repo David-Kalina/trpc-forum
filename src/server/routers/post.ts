@@ -3,23 +3,23 @@
  * This is an example router, you can delete this file and then update `../pages/api/trpc/[trpc].tsx`
  */
 
-import { createRouter } from 'server/createRouter';
-import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { prisma } from '../prisma';
+import { createRouter } from 'server/createRouter';
 import {
   checkIfUserDisliked,
   checkIfUserLiked,
   toggleDislike,
   toggleLike,
 } from 'server/utils/checkIfUserLiked';
+import { z } from 'zod';
+import { prisma } from '../prisma';
 
 export const postRouter = createRouter()
   // create
   .mutation('add', {
     input: z.object({
       id: z.string().uuid().optional(),
-      title: z.string().min(1).max(32),
+      title: z.string().min(1).max(100),
       text: z.string().min(1),
     }),
     async resolve({ input, ctx }) {
@@ -29,19 +29,31 @@ export const postRouter = createRouter()
         });
       }
       const post = await prisma.post.create({
-        data: input,
+        data: {
+          ...input,
+          createdBy: ctx.session.user.name as string,
+        },
       });
       return post;
     },
   })
+  .query('replies', {
+    input: z.object({
+      id: z.string().uuid().optional(),
+    }),
+    async resolve({ input }) {
+      const replies = await prisma.reply.findMany({
+        where: {
+          postId: input.id,
+        },
+      });
+      return replies;
+    },
+  })
+
   // read
   .query('all', {
     async resolve() {
-      /**
-       * For pagination you can have a look at this docs site
-       * @link https://trpc.io/docs/useInfiniteQuery
-       */
-
       return prisma.post.findMany({
         select: {
           id: true,
@@ -98,7 +110,7 @@ export const postRouter = createRouter()
       );
 
       return {
-        posts: likedOrNotLikedPosts,
+        posts: user ? likedOrNotLikedPosts : posts,
         nextCursor,
       };
     },
@@ -151,6 +163,8 @@ export const postRouter = createRouter()
           text: true,
           createdAt: true,
           updatedAt: true,
+          createdBy: true,
+          likes: true,
         },
       });
       if (!post) {
@@ -243,6 +257,34 @@ export const postRouter = createRouter()
           likes:
             (await prisma.postLikes.count({ where: { postId: id } })) -
             (await prisma.postDislikes.count({ where: { postId: id } })),
+        },
+      });
+      return post;
+    },
+  })
+  .mutation('reply', {
+    input: z.object({
+      id: z.string(),
+      data: z.object({
+        text: z.string().min(1).max(32).optional(),
+      }),
+    }),
+    async resolve({ input, ctx }) {
+      if (!ctx?.session?.user) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+        });
+      }
+      const { id, data } = input;
+      const post = await prisma.post.update({
+        where: { id },
+        data: {
+          Reply: {
+            create: {
+              text: data.text as string,
+              createdBy: ctx?.session?.user?.name as string,
+            },
+          },
         },
       });
       return post;
